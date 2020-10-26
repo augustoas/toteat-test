@@ -315,280 +315,276 @@ const DashboardGeneral = (props) => {
     },[])
 
     const handleButtonClick = e => {
-        const { value } = e.target;
-        const boton1 = value === "boton1";
 
-        if (boton1) {
+        var startDate = new Date(filterStartDate)
+        var endDate = new Date(filterFinishDate)
+        const diff = getDifferenceInDays(startDate, endDate)
+        var range = moment.range(startDate, endDate.setDate(endDate.getDate() + 1));
+        const dataAux = {}
+        const dataAux2 = {'Monday': 0, 'Tuesday': 0, 'Wednesday':0, 'Thursday':0, 'Friday':0, 'Saturday':0, 'Sunday':0}
+        const contAux2 = {'Monday': 0, 'Tuesday': 0, 'Wednesday':0, 'Thursday':0, 'Friday':0, 'Saturday':0, 'Sunday':0}
+        const dataAux3 = {}
+        const contAux3 = {}
+        const dataAux4 = {}
+        const contAux4 = {}
+        const dataAux5 = {}
+        const dataAux6 = {}
+        const dataAux7 = {'0 - 20 min': 0, '20 - 40 min': 0, '40 - 60 min': 0, '1 hora - 1 hora 20 min': 0, '1 hora 20 min- 1 hora 40 min': 0, '1 hora 40 min - 2 horas': 0, '>= 2 horas': 0}
+        const dataAux8 = {}
 
-            var startDate = new Date(filterStartDate)
-            var endDate = new Date(filterFinishDate)
-            const diff = getDifferenceInDays(startDate, endDate)
-            var range = moment.range(startDate, endDate.setDate(endDate.getDate() + 1));
-            const dataAux = {}
-            const dataAux2 = {'Monday': 0, 'Tuesday': 0, 'Wednesday':0, 'Thursday':0, 'Friday':0, 'Saturday':0, 'Sunday':0}
-            const contAux2 = {'Monday': 0, 'Tuesday': 0, 'Wednesday':0, 'Thursday':0, 'Friday':0, 'Saturday':0, 'Sunday':0}
-            const dataAux3 = {}
-            const contAux3 = {}
-            const dataAux4 = {}
-            const contAux4 = {}
-            const dataAux5 = {}
-            const dataAux6 = {}
-            const dataAux7 = {'0 - 20 min': 0, '20 - 40 min': 0, '40 - 60 min': 0, '1 hora - 1 hora 20 min': 0, '1 hora 20 min- 1 hora 40 min': 0, '1 hora 40 min - 2 horas': 0, '>= 2 horas': 0}
-            const dataAux8 = {}
+        if (diff === 0){
+            setHideCharts(true)
+            for (var x of data) {
+                var date = new Date(x.date_closed);
+                var dateClosed = new Date(x.date_closed);
+                var dateOpened = new Date(x.date_opened);
+                var diff2 = dateClosed - dateOpened
+                var diffHrs = Math.floor((diff2 % 86400000) / 3600000);
+                var diffMins = Math.round(((diff2 % 86400000) % 3600000) / 60000);
 
-            if (diff === 0){
-                setHideCharts(true)
-                for (var x of data) {
-                    var date = new Date(x.date_closed);
-                    var dateClosed = new Date(x.date_closed);
-                    var dateOpened = new Date(x.date_opened);
-                    var diff2 = dateClosed - dateOpened
-                    var diffHrs = Math.floor((diff2 % 86400000) / 3600000);
-                    var diffMins = Math.round(((diff2 % 86400000) % 3600000) / 60000);
-
-                    if (range.contains(date)){
-                        var newdate = moment(date, "HH:mm:ss").format("HH:mm:ss")
-                        var newdate2 = moment(date).format("HH:00")
-                        var diners = x.diners
-                        var payments = x.payments
-                        var zone = x.zone                        
-
-                        if (newdate in dataAux){
-                            dataAux[newdate] += x.total
-                        }
-                        else {
-                            dataAux[newdate] = x.total
-                        }
-                        if (newdate2 in dataAux4){
-                            dataAux4[newdate2] += x.total
-                            contAux4[newdate2] += 1
-                        }
-                        else {
-                            dataAux4[newdate2] = x.total
-                            contAux4[newdate2] = 1
-                        }
-                        if (diners in dataAux5){
-                            dataAux5[diners] += 1
-                        }
-                        else {
-                            dataAux5[diners] = 1
-                        }
-
-                        for (var p of payments){
-                            var type = p.type
-                            if (type in dataAux6){
-                                dataAux6[type] += p.amount
-                            }
-                            else {
-                                dataAux6[type] = p.amount
-                            }
-                        }
-
-                        if (diffHrs === 0){
-                            if (diffMins <= 20){
-                                dataAux7['0 - 20 min'] += 1
-                            }
-                            else if (diffMins > 20 && diffMins <= 40){
-                                dataAux7['20 - 40 min'] +=1
-                            }
-
-                            else {
-                                dataAux7['40 - 60 min'] += 1
-                            }
-                        }
-
-                        else if (diffHrs === 1){
-                            if (diffMins <= 20){
-                                dataAux7['1 hora - 1 hora 20 min'] += 1
-                            }
-                            else if (diffMins > 20 && diffMins <= 40){
-                                dataAux7['1 hora 20 min- 1 hora 40 min'] += 1
-                            }
-
-                            else {
-                                dataAux7['1 hora 40 min - 2 horas'] += 1
-                            }
-                        }
-
-                        else if (diffHrs === 2){
-                            dataAux7['>= 2 horas'] += 1
-                            
-                        }
-
-                        if (zone in dataAux8){
-                            dataAux8[zone] += 1
-                        }
-                        else {
-                            dataAux8[zone] = 1
-                        }
-                    }
-                }
-
-                var ordered = {};
-                Object.keys(dataAux).sort(function(a, b) {
-                    return moment(b, 'HH:mm:ss').toDate() - moment(a, 'HH:mm:ss').toDate();
-                }).reverse().forEach(function(key) {
-                    ordered[key] = dataAux[key];
-                })
-            }
-
-            else {
-                setHideCharts(false)
-                for (var x of data) {
-                    var date = new Date(x.date_closed);
+                if (range.contains(date)){
+                    var newdate = moment(date, "HH:mm:ss").format("HH:mm:ss")
+                    var newdate2 = moment(date).format("HH:00")
                     var diners = x.diners
                     var payments = x.payments
-                    var zone = x.zone
-                    var dateClosed = new Date(x.date_closed);
-                    var dateOpened = new Date(x.date_opened);
-                    var diff2 = dateClosed - dateOpened
-                    var diffHrs = Math.floor((diff2 % 86400000) / 3600000);
-                    var diffMins = Math.round(((diff2 % 86400000) % 3600000) / 60000);
+                    var zone = x.zone                        
 
-                    if (range.contains(date)){
-                        var newdate = moment(date, "DD-MM-YYYY").format("DD-MM-YYYY")
-                        var newdate2 = moment(date).format("dddd")
-                        var newdate3 = moment(date).format("MMMM")
-                        var newdate4 = moment(date).format("HH:00")
+                    if (newdate in dataAux){
+                        dataAux[newdate] += x.total
+                    }
+                    else {
+                        dataAux[newdate] = x.total
+                    }
+                    if (newdate2 in dataAux4){
+                        dataAux4[newdate2] += x.total
+                        contAux4[newdate2] += 1
+                    }
+                    else {
+                        dataAux4[newdate2] = x.total
+                        contAux4[newdate2] = 1
+                    }
+                    if (diners in dataAux5){
+                        dataAux5[diners] += 1
+                    }
+                    else {
+                        dataAux5[diners] = 1
+                    }
 
-                        if (newdate in dataAux){
-                            dataAux[newdate] += x.total
+                    for (var p of payments){
+                        var type = p.type
+                        if (type in dataAux6){
+                            dataAux6[type] += p.amount
                         }
                         else {
-                            dataAux[newdate] = x.total
+                            dataAux6[type] = p.amount
                         }
-                        if (newdate2 in dataAux2){
-                            dataAux2[newdate2] += x.total
-                            contAux2[newdate2] += 1
-                        }
-                        else {
-                            dataAux2[newdate2] = x.total
-                            contAux2[newdate2] = 1
-                        }
-                        if (newdate3 in dataAux3){
-                            dataAux3[newdate3] += x.total
-                            contAux3[newdate3] += 1
-                        }
-                        else {
-                            dataAux3[newdate3] = x.total
-                            contAux3[newdate3] = 1
-                        }
-                        if (newdate4 in dataAux4){
-                            dataAux4[newdate4] += x.total
-                            contAux4[newdate4] += 1
-                        }
-                        else {
-                            dataAux4[newdate4] = x.total
-                            contAux4[newdate4] = 1
-                        }
-                        if (diners in dataAux5){
-                            dataAux5[diners] += 1
-                        }
-                        else {
-                            dataAux5[diners] = 1
-                        }
-                        for (var p of payments){
-                            var type = p.type
-                            if (type in dataAux6){
-                                dataAux6[type] += p.amount
-                            }
-                            else {
-                                dataAux6[type] = p.amount
-                            }
-                        }
-                        if (diffHrs === 0){
-                            if (diffMins <= 20){
-                                dataAux7['0 - 20 min'] += 1
-                            }
-                            else if (diffMins > 20 && diffMins <= 40){
-                                dataAux7['20 - 40 min'] +=1
-                            }
+                    }
 
-                            else {
-                                dataAux7['40 - 60 min'] += 1
-                            }
+                    if (diffHrs === 0){
+                        if (diffMins <= 20){
+                            dataAux7['0 - 20 min'] += 1
+                        }
+                        else if (diffMins > 20 && diffMins <= 40){
+                            dataAux7['20 - 40 min'] +=1
                         }
 
-                        else if (diffHrs === 1){
-                            if (diffMins <= 20){
-                                dataAux7['1 hora - 1 hora 20 min'] += 1
-                            }
-                            else if (diffMins > 20 && diffMins <= 40){
-                                dataAux7['1 hora 20 min- 1 hora 40 min'] += 1
-                            }
-
-                            else {
-                                dataAux7['1 hora 40 min - 2 horas'] += 1
-                            }
-                        }
-
-                        else if (diffHrs === 2){
-                            dataAux7['>= 2 horas'] += 1
-                        }
-
-                        if (zone in dataAux8){
-                            dataAux8[zone] += 1
-                        }
                         else {
-                            dataAux8[zone] = 1
+                            dataAux7['40 - 60 min'] += 1
                         }
+                    }
+
+                    else if (diffHrs === 1){
+                        if (diffMins <= 20){
+                            dataAux7['1 hora - 1 hora 20 min'] += 1
+                        }
+                        else if (diffMins > 20 && diffMins <= 40){
+                            dataAux7['1 hora 20 min- 1 hora 40 min'] += 1
+                        }
+
+                        else {
+                            dataAux7['1 hora 40 min - 2 horas'] += 1
+                        }
+                    }
+
+                    else if (diffHrs === 2){
+                        dataAux7['>= 2 horas'] += 1
                         
                     }
+
+                    if (zone in dataAux8){
+                        dataAux8[zone] += 1
+                    }
+                    else {
+                        dataAux8[zone] = 1
+                    }
                 }
-
-                var ordered = {};
-                Object.keys(dataAux).sort(function(a, b) {
-                    return moment(b, 'DD-MM-YYYY').toDate() - moment(a, 'DD-MM-YYYY').toDate();
-                }).reverse().forEach(function(key) {
-                    ordered[key] = dataAux[key];
-                })
             }
 
-            setLineChartDataIngresos(Object.values(ordered))
-            setLineChartLabelsIngresos(Object.keys(ordered))
-
-            setBarChartDataIngresosDia(Object.values(dataAux2))
-            setBarChartLabelsIngresosDia(Object.keys(dataAux2))
-
-            for (var y of Object.keys(dataAux2)) {
-                dataAux2[y] = dataAux2[y]/contAux2[y]
-            }
-
-            setBarChartDataIngresosMesaPromDia(Object.values(dataAux2))
-            setBarChartLabelsIngresosMesaPromDia(Object.keys(dataAux2))
-
-            setBarChartDataIngresosMes(Object.values(dataAux3))
-            setBarChartLabelsIngresosMes(Object.keys(dataAux3))
-
-            for (var y of Object.keys(dataAux3)) {
-                dataAux3[y] = dataAux3[y]/contAux3[y]
-            }
-
-            setBarChartDataIngresosMesaPromMes(Object.values(dataAux3))
-            setBarChartLabelsIngresosMesaPromMes(Object.keys(dataAux3))
-
-            setBarChartDataIngresosHora(Object.values(dataAux4))
-            setBarChartLabelsIngresosHora(Object.keys(dataAux4))
-
-            for (var y of Object.keys(dataAux4)) {
-                dataAux4[y] = dataAux4[y]/contAux4[y]
-            }
-
-            setBarChartDataIngresosMesaPromHora(Object.values(dataAux4))
-            setBarChartLabelsIngresosMesaPromHora(Object.keys(dataAux4))
-
-            setPieChartDataDiners(Object.values(dataAux5))
-            setPieChartLabelsDiners(Object.keys(dataAux5))
-
-            setPieChartDataPayment(Object.values(dataAux6))
-            setPieChartLabelsPayment(Object.keys(dataAux6))
-
-            setPieChartDataDuration(Object.values(dataAux7))
-            setPieChartLabelsDuration(Object.keys(dataAux7))
-
-            setPieChartDataZone(Object.values(dataAux8))
-            setPieChartLabelsZone(Object.keys(dataAux8))
+            var ordered = {};
+            Object.keys(dataAux).sort(function(a, b) {
+                return moment(b, 'HH:mm:ss').toDate() - moment(a, 'HH:mm:ss').toDate();
+            }).reverse().forEach(function(key) {
+                ordered[key] = dataAux[key];
+            })
         }
+
+        else {
+            setHideCharts(false)
+            for (var x of data) {
+                var date = new Date(x.date_closed);
+                var diners = x.diners
+                var payments = x.payments
+                var zone = x.zone
+                var dateClosed = new Date(x.date_closed);
+                var dateOpened = new Date(x.date_opened);
+                var diff2 = dateClosed - dateOpened
+                var diffHrs = Math.floor((diff2 % 86400000) / 3600000);
+                var diffMins = Math.round(((diff2 % 86400000) % 3600000) / 60000);
+
+                if (range.contains(date)){
+                    var newdate = moment(date, "DD-MM-YYYY").format("DD-MM-YYYY")
+                    var newdate2 = moment(date).format("dddd")
+                    var newdate3 = moment(date).format("MMMM")
+                    var newdate4 = moment(date).format("HH:00")
+
+                    if (newdate in dataAux){
+                        dataAux[newdate] += x.total
+                    }
+                    else {
+                        dataAux[newdate] = x.total
+                    }
+                    if (newdate2 in dataAux2){
+                        dataAux2[newdate2] += x.total
+                        contAux2[newdate2] += 1
+                    }
+                    else {
+                        dataAux2[newdate2] = x.total
+                        contAux2[newdate2] = 1
+                    }
+                    if (newdate3 in dataAux3){
+                        dataAux3[newdate3] += x.total
+                        contAux3[newdate3] += 1
+                    }
+                    else {
+                        dataAux3[newdate3] = x.total
+                        contAux3[newdate3] = 1
+                    }
+                    if (newdate4 in dataAux4){
+                        dataAux4[newdate4] += x.total
+                        contAux4[newdate4] += 1
+                    }
+                    else {
+                        dataAux4[newdate4] = x.total
+                        contAux4[newdate4] = 1
+                    }
+                    if (diners in dataAux5){
+                        dataAux5[diners] += 1
+                    }
+                    else {
+                        dataAux5[diners] = 1
+                    }
+                    for (var p of payments){
+                        var type = p.type
+                        if (type in dataAux6){
+                            dataAux6[type] += p.amount
+                        }
+                        else {
+                            dataAux6[type] = p.amount
+                        }
+                    }
+                    if (diffHrs === 0){
+                        if (diffMins <= 20){
+                            dataAux7['0 - 20 min'] += 1
+                        }
+                        else if (diffMins > 20 && diffMins <= 40){
+                            dataAux7['20 - 40 min'] +=1
+                        }
+
+                        else {
+                            dataAux7['40 - 60 min'] += 1
+                        }
+                    }
+
+                    else if (diffHrs === 1){
+                        if (diffMins <= 20){
+                            dataAux7['1 hora - 1 hora 20 min'] += 1
+                        }
+                        else if (diffMins > 20 && diffMins <= 40){
+                            dataAux7['1 hora 20 min- 1 hora 40 min'] += 1
+                        }
+
+                        else {
+                            dataAux7['1 hora 40 min - 2 horas'] += 1
+                        }
+                    }
+
+                    else if (diffHrs === 2){
+                        dataAux7['>= 2 horas'] += 1
+                    }
+
+                    if (zone in dataAux8){
+                        dataAux8[zone] += 1
+                    }
+                    else {
+                        dataAux8[zone] = 1
+                    }
+                    
+                }
+            }
+
+            var ordered = {};
+            Object.keys(dataAux).sort(function(a, b) {
+                return moment(b, 'DD-MM-YYYY').toDate() - moment(a, 'DD-MM-YYYY').toDate();
+            }).reverse().forEach(function(key) {
+                ordered[key] = dataAux[key];
+            })
+        }
+
+        setLineChartDataIngresos(Object.values(ordered))
+        setLineChartLabelsIngresos(Object.keys(ordered))
+
+        setBarChartDataIngresosDia(Object.values(dataAux2))
+        setBarChartLabelsIngresosDia(Object.keys(dataAux2))
+
+        for (var y of Object.keys(dataAux2)) {
+            dataAux2[y] = dataAux2[y]/contAux2[y]
+        }
+
+        setBarChartDataIngresosMesaPromDia(Object.values(dataAux2))
+        setBarChartLabelsIngresosMesaPromDia(Object.keys(dataAux2))
+
+        setBarChartDataIngresosMes(Object.values(dataAux3))
+        setBarChartLabelsIngresosMes(Object.keys(dataAux3))
+
+        for (var y of Object.keys(dataAux3)) {
+            dataAux3[y] = dataAux3[y]/contAux3[y]
+        }
+
+        setBarChartDataIngresosMesaPromMes(Object.values(dataAux3))
+        setBarChartLabelsIngresosMesaPromMes(Object.keys(dataAux3))
+
+        setBarChartDataIngresosHora(Object.values(dataAux4))
+        setBarChartLabelsIngresosHora(Object.keys(dataAux4))
+
+        for (var y of Object.keys(dataAux4)) {
+            dataAux4[y] = dataAux4[y]/contAux4[y]
+        }
+
+        setBarChartDataIngresosMesaPromHora(Object.values(dataAux4))
+        setBarChartLabelsIngresosMesaPromHora(Object.keys(dataAux4))
+
+        setPieChartDataDiners(Object.values(dataAux5))
+        setPieChartLabelsDiners(Object.keys(dataAux5))
+
+        setPieChartDataPayment(Object.values(dataAux6))
+        setPieChartLabelsPayment(Object.keys(dataAux6))
+
+        setPieChartDataDuration(Object.values(dataAux7))
+        setPieChartLabelsDuration(Object.keys(dataAux7))
+
+        setPieChartDataZone(Object.values(dataAux8))
+        setPieChartLabelsZone(Object.keys(dataAux8))
+        
     }
 
     function getDifferenceInDays(date1, date2) {
@@ -624,7 +620,7 @@ const DashboardGeneral = (props) => {
                         </div>
 
                         <div className={classes.buttonContainer}>
-                            <Button variant="contained" color="primary"  onClick={handleButtonClick} value="boton1">
+                            <Button variant="contained" color="primary" onClick={handleButtonClick} value="boton1">
                                 Aplicar Filtro
                             </Button>
                         </div>
